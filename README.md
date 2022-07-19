@@ -161,6 +161,64 @@ namespace IdentityManagerLibrary
 }
 ```
 
+File *Response.cs*:
+
+```csharp
+namespace IdentityManagerLibrary
+{
+    /// <summary>
+    /// General response object.
+    /// </summary>    
+    public class Response
+    {
+        public bool Success { get; internal set; } = false;
+        public string Messages { get; internal set; } = string.Empty;
+    }
+}
+```
+
+File *Role.cs*:
+
+```csharp
+using System.Collections.Generic;
+
+namespace IdentityManagerLibrary
+{
+    /// <summary>
+    /// Role model.
+    /// </summary>    
+    public class Role
+    {
+        public string? Id { get; set; }
+        public string? Name { get; set; }
+        public IEnumerable<KeyValuePair<string, string>>? Claims { get; set; }
+    }
+}
+```
+
+File *User.cs*:
+
+```csharp
+using System.Collections.Generic;
+
+namespace IdentityManagerLibrary
+{
+    /// <summary>
+    /// User model.
+    /// </summary>
+    public class User
+    {
+        public string? Id { get; set; }
+        public string? Email { get; set; }
+        public string? LockedOut { get; set; }
+        public IEnumerable<string>? Roles { get; set; }
+        public IEnumerable<KeyValuePair<string, string>>? Claims { get; set; }
+        public string? DisplayName { get; set; }
+        public string? UserName { get; set; }
+    }
+}
+```
+
 File *Manager.cs*:
 
 This is the most important file of the class library, which provides the following methods:
@@ -653,65 +711,7 @@ namespace IdentityManagerLibrary
 }
 ```
 
-File *Response.cs*:
-
-```csharp
-namespace IdentityManagerLibrary
-{
-    /// <summary>
-    /// General response object.
-    /// </summary>    
-    public class Response
-    {
-        public bool Success { get; internal set; } = false;
-        public string Messages { get; internal set; } = string.Empty;
-    }
-}
-```
-
-File *Role.cs*:
-
-```csharp
-using System.Collections.Generic;
-
-namespace IdentityManagerLibrary
-{
-    /// <summary>
-    /// Role model.
-    /// </summary>    
-    public class Role
-    {
-        public string? Id { get; set; }
-        public string? Name { get; set; }
-        public IEnumerable<KeyValuePair<string, string>>? Claims { get; set; }
-    }
-}
-```
-
-File *User.cs*:
-
-```csharp
-using System.Collections.Generic;
-
-namespace IdentityManagerLibrary
-{
-    /// <summary>
-    /// User model.
-    /// </summary>
-    public class User
-    {
-        public string? Id { get; set; }
-        public string? Email { get; set; }
-        public string? LockedOut { get; set; }
-        public IEnumerable<string>? Roles { get; set; }
-        public IEnumerable<KeyValuePair<string, string>>? Claims { get; set; }
-        public string? DisplayName { get; set; }
-        public string? UserName { get; set; }
-    }
-}
-```
-
->:blue_book: Notice that *Manager.cs* is the most important file, which contains all the `CRUD` operations performed against the `ASP.NET Core Identity` tables.
+> :blue_book: Notice that *Manager.cs* is the most important file, which contains all the `CRUD` operations performed against the `ASP.NET Core Identity` tables.
 
 ### Create a Blazor Server Application
 
@@ -741,18 +741,6 @@ Delete the following line from the *Program.cs* file:
 builder.Services.AddSingleton<WeatherForecastService>();
 ```
 
-Add the following to *IdentityManagerBlazorServer.csproj*:
-
-```xml
-<ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.7" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.7" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.7" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.7" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.7" />
-</ItemGroup>
-```
-
 Add a project reference from `IdentityManagerBlazorServer` to `IdentityManagerLibrary`
 
 Add the following to *_Imports.razor*:
@@ -763,7 +751,7 @@ Add the following to *_Imports.razor*:
 
 Modify the *appsettings.json* file with this code:
 
-```xml
+```json
 {
   "ConnectionStrings": {
     "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=IdentityManager;Trusted_Connection=True;MultipleActiveResultSets=true"
@@ -836,42 +824,7 @@ app.Run();
 
 >:blue_book: Notice the code `builder.Services.AddScoped<Manager>();` which will allow our pages to inject an instance of the `Manager` provided by the `IdentityManager` class library, to be able to call it's CRUD operations available.
 
-Open the *ApplicationDbContext.cs* file, and make the following changes:
-
-Change `public class ApplicationDbContext : IdentityDbContext` to `public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>`:
-
-```csharp
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
-```
-
-Add the following:
-
-```c#
-protected override void OnModelCreating(ModelBuilder builder)
-{
-    base.OnModelCreating(builder);
-
-    builder.Entity<ApplicationUser>()
-        .HasMany(p => p.Roles).WithOne()
-        .HasForeignKey(p => p.UserId)
-        .IsRequired()
-        .OnDelete(DeleteBehavior.Cascade);
-
-    builder.Entity<ApplicationUser>()
-        .HasMany(e => e.Claims)
-        .WithOne().HasForeignKey(e => e.UserId)
-        .IsRequired()
-        .OnDelete(DeleteBehavior.Cascade);
-
-    builder.Entity<ApplicationRole>()
-        .HasMany(r => r.Claims).WithOne()
-        .HasForeignKey(r => r.RoleId)
-        .IsRequired()
-        .OnDelete(DeleteBehavior.Cascade);
-}
-```
-
-The complete *ApplicationDbContext.cs* file should look like this:
+Open the *ApplicationDbContext.cs* file, and replace it with the following:
 
 ```c#
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -914,7 +867,11 @@ namespace IdentityManagerBlazorServer.Data
 
 Set `IdentityManagerBlazorServer` as the startup project.
 
-Open the `Package Manager Console` and run `update-database` to create the `IdentityManager` database.
+Open the `Package Manager Console` and set the `Default project` to `IdentityManagerBlazorServer`
+
+![image-20220719100808580](md-images/image-20220719100808580.png)
+
+Run `update-database` to create the `IdentityManager` database.
 
 You should see the following output:
 
