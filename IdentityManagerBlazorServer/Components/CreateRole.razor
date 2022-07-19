@@ -1,0 +1,47 @@
+﻿@page "/createrole"
+@inject Manager manager;
+
+<h3><b>Create Role</b></h3>  
+<hr/>
+
+<EditForm Model="@role" OnValidSubmit="@OnCreateRole">
+    <div class="row">
+        <div class="col3">
+            Role name:
+        </div>
+        <div class="col9">
+            <InputText id="name" @bind-Value="role.Name" />
+        </div>
+    </div>
+    <br />
+
+    <button type="submit">Save</button>
+    <br />
+    <br />
+</EditForm>
+
+
+@if (createRole)
+{
+    @if (response?.Success == true)
+    {
+        <div style="color:green;">Role created successfully.</div>
+    }
+    else
+    {
+        <div style="color:red;">An error has occurred when creating role: @response?.Messages</div>
+    }
+}
+
+@code {
+    private ViewModels.CreateRoleViewModel role = new();
+    private Response? response = null;
+    private bool createRole = false;
+
+    private async void OnCreateRole()
+    {
+        createRole = true;
+        response = await manager!.CreateRole(role.Name!);
+        StateHasChanged();
+    }
+}

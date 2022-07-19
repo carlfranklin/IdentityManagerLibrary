@@ -1,0 +1,72 @@
+﻿@page "/roles"
+@inject Manager manager;
+
+<PageTitle>Roles</PageTitle>
+
+<h3><b>Roles</b></h3>  
+<hr/>  
+
+
+@if (roles == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <NavLink class="btn btn-primary" href="createrole">
+        New
+    </NavLink>
+    <br />
+    <br />
+
+    <div class="row">
+        <div class="col3">
+            Filter:
+        </div>
+        <div class="col9">
+            <input @bind-value:event="oninput" @bind-value="Filter" @onkeyup="GetRoles" />
+        </div>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var role in roles)
+            {
+                <tr>
+                    <td>@role.Id</td>
+                    <td>@role.Name</td>
+                    <td><button type="button" class="btn btn-secondary" @onclick="() => DeleteRole(role.Id!)">Delete</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<Role>? roles;
+    private string Filter { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        GetRoles();
+        base.OnInitialized();
+    }
+
+    private async void DeleteRole(string roleId)
+    {
+        var response = await manager.DeleteRole(roleId);
+        if (response.Success) GetRoles();
+    }
+
+    private void GetRoles()
+    {
+        roles = manager.GetRoles(Filter);
+        StateHasChanged();
+    }
+}

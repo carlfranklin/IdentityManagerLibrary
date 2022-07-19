@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityManagerLibrary", "IdentityManagerLibrary\IdentityManagerLibrary.csproj", "{6DEA8408-CBC8-49F4-870E-A1F2012EE525}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityManagerBlazorServer", "IdentityManagerBlazorServer\IdentityManagerBlazorServer.csproj", "{13C47271-88BC-4A3C-8BA6-FEF6558289EA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6DEA8408-CBC8-49F4-870E-A1F2012EE525}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DEA8408-CBC8-49F4-870E-A1F2012EE525}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DEA8408-CBC8-49F4-870E-A1F2012EE525}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DEA8408-CBC8-49F4-870E-A1F2012EE525}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13C47271-88BC-4A3C-8BA6-FEF6558289EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13C47271-88BC-4A3C-8BA6-FEF6558289EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13C47271-88BC-4A3C-8BA6-FEF6558289EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13C47271-88BC-4A3C-8BA6-FEF6558289EA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B371467F-3B9E-4B66-BF31-298A9BAACB91}
+	EndGlobalSection
+EndGlobal

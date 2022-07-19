@@ -1,0 +1,96 @@
+﻿@page "/users"
+@inject Manager manager;
+
+<PageTitle>Users</PageTitle>
+
+<h3><b>Users</b></h3>  
+<hr/>  
+
+@if (users == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <NavLink class="btn btn-primary" href="createuser">
+        New
+    </NavLink>
+    <br />
+    <br />
+
+    <div class="row">
+        <div class="col3">
+            Filter:
+        </div>
+        <div class="col9">
+            <input @bind-value:event="oninput" @bind-value="Filter" @onkeyup="GetUsers" />
+        </div>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Email</th>
+                <th>User Name</th>
+                <th>Display Name</th>
+                <th>Roles</th>
+                <th>Locked Out</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.Email</td>
+                    <td>@user.UserName</td>
+                    <td>@user.DisplayName</td>
+                    <td>
+                        @foreach (var role in user.Roles!)
+                        {
+                            <text>@role</text><br/>
+                        }
+                    </td>
+                    <td>@user.LockedOut</td>
+                    <td>
+                        <a class="btn btn-primary" href="edituser/@user.Id">
+                            Edit
+                        </a>
+                    </td>
+                    <td><button type="button" class="btn btn-secondary" @onclick="() => DeleteUser(user.Id!)">Delete</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<User>? users;
+    private string Filter { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        GetUsers();
+    }
+
+    private void FilterList()
+    {
+        GetUsers();
+    }
+
+    private async void DeleteUser(string userId)
+    {
+        var response = await manager.DeleteUser(userId);
+        if (response.Success)
+        {
+            GetUsers();
+        }
+    }
+
+    private void GetUsers()
+    {
+        users = manager.GetUsers(Filter);
+        StateHasChanged();
+    }
+}

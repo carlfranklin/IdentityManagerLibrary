@@ -1,0 +1,94 @@
+﻿@page "/edituser/{userId}"
+@inject Manager manager;
+
+<EditForm Model="@user" OnValidSubmit="@UpdateUser">
+    <h3><b>Edit User</b></h3>
+    <hr />
+    <div class="row">
+        <div class="col3">
+            Username:
+        </div>
+        <div class="col9">
+            <InputText id="userName" disabled @bind-Value="currentUser!.UserName" />
+        </div>
+        <div class="col3">
+            Email:
+        </div>
+        <div class="col9">
+            <InputText id="email" @bind-Value="user.Email" />
+        </div>
+        <br />
+        <br />
+        <h4><b>Roles</b></h4>
+        <br />
+        <CheckBoxList Data="@roles"
+                      TextField="@((item)=>item.Value)"
+                      ValueField="@((item)=>item.Value)"
+                      SelectedValues="@selectedRoles" />
+    </div>
+    <br />
+
+    <button type="submit">Save</button>
+    <br />
+    <br />
+
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+</EditForm>
+
+@if (editUser)
+{
+    @if (response?.Success == true)
+    {
+        <div style="color:green;">User updated successfully.</div>
+    }
+    else
+    {
+        <div style="color:red;">An error has occurred when updating user: @response?.Messages</div>
+    }
+}
+
+@code {
+    [Parameter]
+    public string? userId { get; set; }
+    private ApplicationUser? currentUser;
+    private ViewModels.EditUserViewModel user = new();
+    private Response? response = null;
+    private bool editUser = false;
+    private Dictionary<string, string>? roles;
+    private  List<KeyValuePair<string, string>>? claims = new();
+    protected List<string> selectedRoles = new List<string>();
+
+    protected async override void OnInitialized()
+    {
+        currentUser = await manager!.GetUser(userId!);
+
+        roles = manager.Roles;
+
+        foreach (var role in currentUser.Roles!)
+        {
+            if (roles.ContainsKey(role.RoleId))
+            {
+                selectedRoles.Add(roles[role.RoleId]);
+            }
+        }
+
+
+        foreach (var claim in currentUser.Claims!)
+        {
+            var claimKey = manager.ClaimTypes.Where(c => c.Value.Equals(claim.ClaimType)).First().Key;
+            claims!.Add(new KeyValuePair<string, string>(claimKey, claim.ClaimValue));
+        }
+
+        user.Email = currentUser.Email;
+
+        base.OnInitialized();
+    }
+
+    private async void UpdateUser()
+    {
+        editUser = true;
+        response = await manager!.UpdateUser(currentUser?.Id!, user?.Email!, currentUser?.LockoutEnd > DateTime.Now, selectedRoles.ToArray(), claims!);
+        StateHasChanged();
+    }
+}
