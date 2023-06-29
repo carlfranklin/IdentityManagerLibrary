@@ -1,24 +1,12 @@
-# Table of Contents
-
-- [Table of Contents](#table-of-contents)
-  - [Introduction](#introduction)
-  - [Prerequisites](#prerequisites)
-    - [.NET 6.0](#net-60)
-    - [Visual Studio 2022](#visual-studio-2022)
-  - [Demo](#demo)
-    - [Create a `netstandard` Class Library](#create-a-netstandard-class-library)
-    - [Create a Blazor Server Application](#create-a-blazor-server-application)
-  - [Summary](#summary)
-  - [Complete Code](#complete-code)
-  - [Resources](#resources)
-
 ## Introduction
 
 In this demo, we are going to build a `netstandard` class library based on the `GitHub` repo by `mguinness` that was shown in episodes [Basic Authentication and Authorization in Blazor Server: Carl Franklin's Blazor Train ep 26 ](https://www.youtube.com/watch?v=mbNFscKBsy8&list=PL8h4jt35t1wjvwFnvcB2LlYL4jLRzRmoz&index=30&t=790s), and [Basic Authentication and Authorization in Blazor Web Assembly: Carl Franklin's Blazor Train ep 27](https://www.youtube.com/watch?v=I3A1R-oBK7c&list=PL8h4jt35t1wjvwFnvcB2LlYL4jLRzRmoz&index=31), and that you can find [here](https://github.com/mguinness/IdentityManagerUI).
 
-Then, we are going to build a Blazor Server application, and make use of the `netstandard` class library.
+Then, we are going to build a Blazor Server application to manage users and roles, and make use of the `netstandard` class library.
 
-The end results will look like this:
+Finally, we'll create a Blazor Server application to test registration, authentication, and authorization.
+
+The admin app will look like this:
 
 ![image-20220719092750604](md-images/image-20220719092750604.png)
 
@@ -34,9 +22,9 @@ The end results will look like this:
 
 The following prerequisites are needed for this demo.
 
-### .NET 6.0
+### .NET 7.0
 
-Download the latest version of the .NET 6.0 SDK [here](https://dotnet.microsoft.com/en-us/download).
+.NET 7 is installed with Visual Studio, but you can always download the latest version of the .NET 7.0 SDK [here](https://dotnet.microsoft.com/en-us/download).
 
 ### Visual Studio 2022
 
@@ -54,7 +42,7 @@ Open Visual Studio 2022, and create a `Class Library` project called `IdentityMa
 
 ![image-20220719093157213](md-images/image-20220719093157213.png)  
 
-![image-20220719093222901](md-images/image-20220719093222901.png)  
+![image-20230629113723216](images/image-20230629113723216.png)  
 
 Open *IdentityManagerLibrary.csproj* and change it to the following:
 
@@ -721,9 +709,9 @@ Now, let's create a Blazor Server Application called *IdentityManagerBlazorServe
 
 ![image-20220719093510093](md-images/image-20220719093510093.png)
 
-Make sure you set the `Authentication type`  to `Individual Accounts`""
+Make sure you set the `Authentication type`  to "`Individual Accounts`"
 
-![image-20220719093646843](md-images/image-20220719093646843.png)
+![image-20230629113936548](images/image-20230629113936548.png)
 
 Delete the following files as we are not going to need them:
 
@@ -1432,7 +1420,14 @@ File *CreateUser.razor*:
 {
     @if (response?.Success == true)
     {
-        <div style="color:green;">User created successfully.</div>
+        <div style="color:green;">User created successfully. </div>
+        <div>
+            <br />
+            The user must be confirmed by email before they can log in.
+            <br/><br/>
+            You can optionally set the EmailConfirmed field in the user
+            record in the dbo.AspNetUsers table to True.
+        </div>
     }
     else
     {
@@ -1562,7 +1557,14 @@ Replace *Pages/Index.razor* with the following:
 
 <h1>Identity Manager - Blazor Server demo</h1>
 
-Using the Identity Manager class library in a Blazor Server application.
+<br/>
+This app lets you manage users and roles using the Identity Manager class library.
+The identity database can then be used for auth in another ASP.NET application. 
+
+<br/>
+<br/>
+To test the auth with the users and roles you create here, run the 
+AuthDemo project in this solution.
 ```
 
 Replace *Shared/NavMenu.razor* with the following:
@@ -1626,13 +1628,191 @@ Now, run the `IdentityManagerBlazorServer` application and you should be able to
 
 ![image-20220719092505479](md-images/image-20220719092505479.png)  
 
-Give it a try, and create users, roles, and assign roles to users.
+Run the app, create a new role named **admin**. Then, create a new user and assign the **admin** role to them.
+
+> :point_up: Note that after creating a new user, you will have to set the **EmailConfirmed** field in the *dbo.AspNetUsers* table to **True** before you can test logging in as them, which is the next topic.
+
+## Build a Test App
+
+Because of the requirements of the admin app, you will NOT be able to use it to test logging in. For that, we need to create a separate application.
+
+Add to the project a new **Blazor Server** project called **AuthDemo**
+
+Make sure you set the `Authentication type`  to "`Individual Accounts`"
+
+![image-20230629113936548](images/image-20230629113936548.png)
+
+Add the following at line 18 of *Program.cs*:
+
+```c#
+.AddRoles<IdentityRole>()   // add this to support roles
+```
+
+Change the `DefaultConnection` in *appsettings.json* to the same identity database used by the admin:
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=IdentityManager;Trusted_Connection=True;MultipleActiveResultSets=true"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}
+```
+
+Replace *\Shared\NavMenu.razor* with the following:
+
+```c#
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">AuthDemo</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        @*Require authentication to see the Counter page*@
+        <AuthorizeView>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="counter">
+                    <span class="oi oi-plus" aria-hidden="true"></span> Counter
+                </NavLink>
+            </div>
+        </AuthorizeView>
+        @*Require authentication with the admin role to see the FetchData page*@
+        <AuthorizeView Roles="admin">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="fetchdata">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
+                </NavLink>
+            </div>
+        </AuthorizeView>
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}
+```
+
+I've modified the NavMenu so that it will only show the **Counter** and **Fetch data** options to authenticated users, and only show the **Fetch data** option if the authenticated user is in the **admin** role.
+
+Replace *\Pages\Counter.razor* with the following:
+
+```c#
+@page "/counter"
+
+@*authentication reqired*@
+@attribute [Authorize]
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}
+```
+
+I have added the `Authorize` attribute to this page, requiring the user to be authenticated.
+
+Replace *\Pages\FetchData.razor* with the following:
+
+```c#
+@page "/fetchdata"
+@using AuthDemo.Data
+@inject WeatherForecastService ForecastService
+
+@*admin role reqired*@
+@attribute [Authorize(Roles = "admin")]
+
+<PageTitle>Weather forecast</PageTitle>
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from a service. The admin role is required</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private WeatherForecast[]? forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        forecasts = await ForecastService.GetForecastAsync(DateOnly.FromDateTime(DateTime.Now));
+    }
+}
+```
+
+I have modified it to only allow authenticated users in the **admin** role to use the page.
+
+Set **AuthDemo** to be the startup project, and run it. Try logging in as your new user.
+
+Test the authorization rules!
 
 ## Summary
 
 In this demo, we built a `netstandard` class library based on the `GitHub` repo by [mguinness](https://github.com/mguinness/IdentityManagerUI), to provide CRUD operations to `ASP.NET Core Identity` tables.
 
 Then we built a basic Blazor Server application to make use of the `netstandard` class library we created, to provide a UI to add/list/delete users, and roles.
+
+Finally, we built a test application that we can use to test users, roles, and authentication.
 
 >:blue_book: This is a basic UI demo, just to demonstrate how to use the `IdentityManager` class library, but does not contain everything needed to fully administer users, and roles. It is up to you, to build your own UI to fully manage users, roles, and claims.
 

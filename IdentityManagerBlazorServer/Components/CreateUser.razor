@@ -44,7 +44,14 @@
 {
     @if (response?.Success == true)
     {
-        <div style="color:green;">User created successfully.</div>
+        <div style="color:green;">User created successfully. </div>
+        <div>
+            <br />
+            The user must be confirmed by email before they can log in.
+            <br/><br/>
+            You can optionally set the EmailConfirmed field in the user
+            record in the dbo.AspNetUsers table to True.
+        </div>
     }
     else
     {
