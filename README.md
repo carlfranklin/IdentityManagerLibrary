@@ -1,3 +1,9 @@
+# IdentityManagerLibrary
+
+This is a .NET 7 library (with demos) for managing an ASP.NET Core Identity SQL Database (users and roles).
+
+> :point_up: This is a .NET 7 library. It is not self-contained. That is, it requires an ApplicationDbContext in the host app. For a self-contained .NET 8 version of this, use [AvnIdentityManager​](https://github.com/carlfranklin/AvnIdentityManager). AvnIdentityManager also lets you change Auth databases on the fly using a new SQL connection string.
+
 ## Introduction
 
 In this demo, we are going to build a `netstandard` class library based on the `GitHub` repo by `mguinness` that was shown in episodes [Basic Authentication and Authorization in Blazor Server: Carl Franklin's Blazor Train ep 26 ](https://www.youtube.com/watch?v=mbNFscKBsy8&list=PL8h4jt35t1wjvwFnvcB2LlYL4jLRzRmoz&index=30&t=790s), and [Basic Authentication and Authorization in Blazor Web Assembly: Carl Franklin's Blazor Train ep 27](https://www.youtube.com/watch?v=I3A1R-oBK7c&list=PL8h4jt35t1wjvwFnvcB2LlYL4jLRzRmoz&index=31), and that you can find [here](https://github.com/mguinness/IdentityManagerUI).
